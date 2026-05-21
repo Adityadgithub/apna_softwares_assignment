@@ -1,15 +1,13 @@
 import 'package:get/get.dart';
 
-import '../../domain/entities/product.dart';
-import '../../domain/usecases/get_favorites.dart';
-import '../../domain/usecases/toggle_favorite.dart';
+import '../../data/models/product.dart';
+import '../../data/product_repository.dart';
 import '../../services/sync_manager.dart';
 import 'connectivity_controller.dart';
 import 'product_controller.dart';
 
 class FavoritesController extends GetxController {
-  final GetFavorites _getFavorites = Get.find();
-  final ToggleFavorite _toggleFavorite = Get.find();
+  final ProductRepository _repo = Get.find();
   final SyncManager _syncManager = Get.find();
   final ConnectivityController _connectivity = Get.find();
 
@@ -18,12 +16,12 @@ class FavoritesController extends GetxController {
 
   Future<void> loadFavorites() async {
     isLoading.value = true;
-    favorites.assignAll(await _getFavorites());
+    favorites.assignAll(await _repo.getFavorites());
     isLoading.value = false;
   }
 
   Future<void> onFavoriteTap(Product product) async {
-    await _toggleFavorite(product.id, false);
+    await _repo.toggleFavorite(product.id, false);
     favorites.removeWhere((e) => e.id == product.id);
     _syncHomeProduct(product.id);
     await _syncManager.refreshPendingCount();

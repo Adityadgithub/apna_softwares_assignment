@@ -2,22 +2,22 @@ import 'package:get/get.dart';
 import 'package:logger/logger.dart';
 
 import '../core/constants/app_constants.dart';
-import '../data/datasources/local/sync_queue_local_ds.dart';
-import '../domain/entities/sync_action.dart';
+import '../data/local_store.dart';
+import '../data/models/sync_action.dart';
 import 'connectivity_service.dart';
 
 enum SyncState { idle, syncing, failed }
 
 class SyncManager extends GetxService {
   SyncManager({
-    required SyncQueueLocalDataSource queue,
+    required LocalStore store,
     required ConnectivityService connectivity,
     Logger? logger,
-  })  : _queue = queue,
+  })  : _store = store,
         _connectivity = connectivity,
         _log = logger ?? Logger();
 
-  final SyncQueueLocalDataSource _queue;
+  final LocalStore _store;
   final ConnectivityService _connectivity;
   final Logger _log;
 
@@ -25,7 +25,7 @@ class SyncManager extends GetxService {
   final pendingCount = 0.obs;
 
   Future<void> refreshPendingCount() async {
-    pendingCount.value = await _queue.pendingCount();
+    pendingCount.value = await _store.pendingSyncCount();
   }
 
   Future<void> processQueue() async {
@@ -34,7 +34,7 @@ class SyncManager extends GetxService {
 
     syncState.value = SyncState.syncing;
     try {
-      final actions = await _queue.pending();
+      final actions = await _store.pendingSync();
       for (final action in actions) {
         await _processAction(action);
       }
@@ -49,9 +49,9 @@ class SyncManager extends GetxService {
   Future<void> _processAction(SyncAction action) async {
     try {
       await _simulateRemoteSync(action);
-      await _queue.markDone(action.id);
+      await _store.markSyncDone(action.id);
     } catch (e) {
-      await _queue.markFailed(action.id, action.retryCount);
+      await _store.markSyncFailed(action.id, action.retryCount);
       _log.w('Action ${action.id} failed, retry ${action.retryCount + 1}');
     }
   }

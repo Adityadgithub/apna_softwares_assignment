@@ -2,20 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../core/errors/app_exception.dart';
-import '../../domain/entities/data_load_source.dart';
-import '../../domain/entities/product.dart';
-import '../../domain/repositories/product_repository.dart';
-import '../../domain/usecases/get_products_page.dart';
-import '../../domain/usecases/toggle_favorite.dart';
+import '../../data/models/data_load_source.dart';
+import '../../data/models/product.dart';
+import '../../data/product_repository.dart';
 import '../../services/pagination_manager.dart';
 import '../../services/sync_manager.dart';
 import 'connectivity_controller.dart';
 import 'favorites_controller.dart';
 
 class ProductController extends GetxController {
-  final GetProductsPage _getProducts = Get.find();
-  final ToggleFavorite _toggleFavorite = Get.find();
-  final ProductRepository _repository = Get.find();
+  final ProductRepository _repo = Get.find();
   final SyncManager _syncManager = Get.find();
   final ConnectivityController _connectivity = Get.find();
 
@@ -74,8 +70,11 @@ class ProductController extends GetxController {
     errorMessage.value = null;
 
     try {
-      final items = await _getProducts(page, forceRefresh: forceRefresh);
-      final totalPages = await _repository.getTotalPages();
+      final items = await _repo.getProducts(
+        page: page,
+        forceRefresh: forceRefresh,
+      );
+      final totalPages = await _repo.getTotalPages();
 
       if (page == 1 && items.length > 10) {
         products.assignAll(items);
@@ -124,7 +123,7 @@ class ProductController extends GetxController {
         fav.favorites.removeWhere((e) => e.id == product.id);
       }
     }
-    await _toggleFavorite(product.id, next);
+    await _repo.toggleFavorite(product.id, next);
     await _syncManager.refreshPendingCount();
     if (_connectivity.isOnline.value) {
       await _syncManager.processQueue();
@@ -134,7 +133,7 @@ class ProductController extends GetxController {
   bool get hasMore => _pagination.hasMore;
 
   void _updateDataLoadBanner() {
-    if (_repository.lastLoadSource == DataLoadSource.api) {
+    if (_repo.lastLoadSource == DataLoadSource.api) {
       _usedApiThisSession = true;
     }
     dataLoadSource.value = _usedApiThisSession

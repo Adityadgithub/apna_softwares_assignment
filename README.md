@@ -10,22 +10,26 @@ dart run build_runner build
 flutter run
 ```
 
-## Architecture
+## Architecture (simplified)
 
 ```
 lib/
-  core/           # API constants, Dio, errors
-  domain/         # entities, repository contracts, use cases
-  data/           # Drift DB, datasources, repository impl
-  services/       # connectivity, sync queue, pagination helper
-  presentation/   # GetX bindings, controllers, UI
+  core/              # constants, errors, theme
+  data/
+    api.dart         # HTTP calls
+    local_store.dart # all Drift reads/writes
+    product_repository.dart  # offline-first logic
+    database/        # Drift schema
+    models/          # Product, ProductDetail, DTOs
+  services/          # connectivity, sync, pagination
+  presentation/      # GetX controllers, pages, widgets
 ```
 
 **Flow**
 
-- Online: API → local Drift DB → UI (cache expires after 10 minutes per page)
-- Offline: Drift only
-- Favorites: instant UI update → local `favorites` + `sync_queue` → auto sync on reconnect
+- Online: API → `LocalStore` → UI (cache expires after 10 minutes per page)
+- Offline: `LocalStore` only
+- Favorites: instant UI → local DB + sync queue → auto sync on reconnect
 
 **Drift tables**
 
@@ -38,4 +42,4 @@ lib/
 
 ## Stack
 
-GetX, Dio, Drift, connectivity_plus
+GetX, http, Drift, connectivity_plus

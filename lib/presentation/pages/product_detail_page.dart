@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../core/theme/app_theme.dart';
-import '../../domain/entities/product_detail.dart';
+import '../../data/models/product_detail.dart';
 import '../controllers/product_detail_controller.dart';
 import '../widgets/detail_info_row.dart';
 import '../widgets/empty_state.dart';

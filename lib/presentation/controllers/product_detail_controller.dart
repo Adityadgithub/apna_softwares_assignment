@@ -1,17 +1,15 @@
 import 'package:get/get.dart';
 
-import '../../domain/entities/product.dart';
-import '../../domain/entities/product_detail.dart';
-import '../../domain/usecases/get_product_detail.dart';
-import '../../domain/usecases/toggle_favorite.dart';
+import '../../data/models/product.dart';
+import '../../data/models/product_detail.dart';
+import '../../data/product_repository.dart';
 import '../../services/sync_manager.dart';
 import 'connectivity_controller.dart';
 import 'favorites_controller.dart';
 import 'product_controller.dart';
 
 class ProductDetailController extends GetxController {
-  final GetProductDetail _getDetail = Get.find();
-  final ToggleFavorite _toggleFavorite = Get.find();
+  final ProductRepository _repo = Get.find();
   final SyncManager _syncManager = Get.find();
   final ConnectivityController _connectivity = Get.find();
 
@@ -31,7 +29,7 @@ class ProductDetailController extends GetxController {
   Future<void> loadDetail() async {
     isLoading.value = true;
     errorMessage.value = null;
-    final result = await _getDetail(productId);
+    final result = await _repo.getProductDetail(productId);
     if (result == null) {
       errorMessage.value = 'Product not found. Open it from the list first.';
     } else {
@@ -46,7 +44,7 @@ class ProductDetailController extends GetxController {
 
     final next = !current.isFavorite;
     detail.value = current.copyWith(isFavorite: next);
-    await _toggleFavorite(current.id, next);
+    await _repo.toggleFavorite(current.id, next);
     _syncLists(current.id, next);
     await _syncManager.refreshPendingCount();
     if (_connectivity.isOnline.value) {

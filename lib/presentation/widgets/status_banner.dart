@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../core/theme/app_theme.dart';
-import '../../domain/entities/data_load_source.dart';
+import '../../data/models/data_load_source.dart';
 import '../../services/sync_manager.dart';
 
 class StatusBanner extends StatelessWidget {

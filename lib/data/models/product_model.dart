@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import '../../domain/entities/product.dart';
+import 'product.dart';
 
 class ProductModel extends Product {
   const ProductModel({
